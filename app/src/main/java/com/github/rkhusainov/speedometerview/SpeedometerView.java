@@ -10,19 +10,15 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import static android.content.ContentValues.TAG;
-
 public class SpeedometerView extends View {
 
     public static final float STROKE_WIDTH = 64;
     public static final int DEFAULT_MAX_SPEED = 360;
-    public static final int DEFAULT_CURRENT_SPEED = 0;
     private static final int DEFAULT_COLOR_BACK_SCALE = Color.GRAY;
     private static final int DEFAULT_COLOR_LOW = Color.BLUE;
     private static final int DEFAULT_COLOR_MIDDLE = Color.GREEN;
@@ -71,8 +67,11 @@ public class SpeedometerView extends View {
         final TypedArray typedArray = theme.obtainStyledAttributes(attrs,
                 R.styleable.SpeedometerView, 0, 0);
 
+        // Default values
+//        final TypedArray typedArray = theme.obtainStyledAttributes(attrs,
+//                R.styleable.SpeedometerView, R.attr.speedometerProgressStyle, R.style.SpeedometerDefaultProgressStyle);
+
         try {
-            mCurrentSpeed = typedArray.getInteger(R.styleable.SpeedometerView_current_speed, DEFAULT_CURRENT_SPEED);
             mMaxSpeed = typedArray.getInteger(R.styleable.SpeedometerView_max_speed, DEFAULT_MAX_SPEED);
             mLowSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color, DEFAULT_COLOR_LOW);
             mMiddleSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color, DEFAULT_COLOR_MIDDLE);
@@ -117,13 +116,13 @@ public class SpeedometerView extends View {
         super.onDraw(canvas);
         canvas.translate(mCenterX, mCenterY);
 
-        // шкала
+        // scale
         drawScaleBackground(canvas);
 
-        // индикатор
+        // indicator
         drawScaleIndicator(canvas);
 
-        // текст
+        // text
         drawText(canvas);
     }
 
@@ -162,15 +161,12 @@ public class SpeedometerView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-//        final int width = getMeasuredWidth(); //parent width
-//        final int height = getMeasuredHeight(); //parent height
-
-        int newWidth = ((int) mSpeedRect.width() + (int) mBackScalePaint.getStrokeWidth() * 2);
-        int newHeight = ((int) mSpeedRect.height() + (int) mBackScalePaint.getStrokeWidth() * 2);
+        int width = ((int) mSpeedRect.width() + (int) mBackScalePaint.getStrokeWidth() * 2);
+        int weight = ((int) mSpeedRect.height() + (int) mBackScalePaint.getStrokeWidth() * 2);
 
         mCenterX = (int) STROKE_WIDTH;
         mCenterY = (int) STROKE_WIDTH;
 
-        setMeasuredDimension(newWidth, newHeight);
+        setMeasuredDimension(width, weight);
     }
 }
