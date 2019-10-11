@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Speedometer View</string>
+    <string name="speed_template">%d km/h</string>
+    <string name="speedometer">Speedometer</string>
+</resources>
