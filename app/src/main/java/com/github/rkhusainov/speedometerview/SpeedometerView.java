@@ -19,11 +19,10 @@ public class SpeedometerView extends View {
 
     public static final float STROKE_WIDTH = 64;
     public static final int DEFAULT_MAX_SPEED = 360;
-    private static final int DEFAULT_COLOR_BACK_SCALE = Color.GRAY;
+    private static final int DEFAULT_COLOR_INDICATOR = Color.GRAY;
     private static final int DEFAULT_COLOR_LOW = Color.BLUE;
     private static final int DEFAULT_COLOR_MIDDLE = Color.GREEN;
     private static final int DEFAULT_COLOR_HIGH = Color.RED;
-    private static final int DEFAULT_COLOR_INDICATOR = Color.RED;
     private static final int DEFAULT_COLOR_TEXT = Color.DKGRAY;
 
     private int mCurrentSpeed;
@@ -34,7 +33,7 @@ public class SpeedometerView extends View {
     private int mIndicatorColor;
     private int mTextSize;
 
-    private RectF mSpeedRect = new RectF(0, 0, 700, 700);
+    private RectF mProgressRect = new RectF();
     private Path mBackgroundScalePath = new Path();
     private Path mIndicatorScalePath = new Path();
 
@@ -88,7 +87,7 @@ public class SpeedometerView extends View {
     private void initDrawingTools() {
         mBackScalePaint.setStrokeWidth(STROKE_WIDTH);
         mBackScalePaint.setStyle(Paint.Style.STROKE);
-        mBackScalePaint.setColor(DEFAULT_COLOR_BACK_SCALE);
+        mBackScalePaint.setColor(mIndicatorColor);
 
         mIndicatorPaint.setStrokeWidth(STROKE_WIDTH);
         mIndicatorPaint.setStyle(Paint.Style.STROKE);
@@ -116,7 +115,12 @@ public class SpeedometerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.translate(STROKE_WIDTH, STROKE_WIDTH);
+        canvas.translate(STROKE_WIDTH/2, STROKE_WIDTH/2);
+
+        mProgressRect.left = getPaddingLeft();
+        mProgressRect.top = getPaddingTop();
+        mProgressRect.right = getWidth() - STROKE_WIDTH - getPaddingRight();
+        mProgressRect.bottom = getHeight() - STROKE_WIDTH - getPaddingBottom();
 
         // scale
         drawScaleBackground(canvas);
@@ -129,16 +133,16 @@ public class SpeedometerView extends View {
     }
 
     private void drawArrow(Canvas canvas) {
-        double radius = mSpeedRect.height() / 2;
-        double angle = (2 * Math.PI) / mMaxSpeed * mCurrentSpeed + 2 * Math.PI/2;
+        double radius = mProgressRect.height() / 2;
+        double angle = (2 * Math.PI) / mMaxSpeed * mCurrentSpeed + 2 * Math.PI / 2;
         float x = (float) (radius * Math.cos(angle));
         float y = (float) (radius * Math.sin(angle));
-        canvas.drawLine(mSpeedRect.centerX(), mSpeedRect.centerY(), x + mSpeedRect.centerX(), y + mSpeedRect.centerY(), mArrowPaint);
+        canvas.drawLine(mProgressRect.centerX(), mProgressRect.centerY(), x + mProgressRect.centerX(), y + mProgressRect.centerY(), mArrowPaint);
     }
 
     private void drawScaleBackground(Canvas canvas) {
         for (int i = -180; i < 0; i += 4) {
-            mBackgroundScalePath.addArc(mSpeedRect, i, 2f);
+            mBackgroundScalePath.addArc(mProgressRect, i, 2f);
         }
         canvas.drawPath(mBackgroundScalePath, mBackScalePaint);
     }
@@ -146,7 +150,7 @@ public class SpeedometerView extends View {
     private void drawScaleIndicator(Canvas canvas) {
         mIndicatorScalePath.reset();
         for (int i = -180; i < mCurrentSpeed - 180; i += 4) {
-            mIndicatorScalePath.addArc(mSpeedRect, i, 2f);
+            mIndicatorScalePath.addArc(mProgressRect, i, 2f);
         }
         canvas.drawPath(mIndicatorScalePath, mIndicatorPaint);
     }
@@ -162,9 +166,9 @@ public class SpeedometerView extends View {
         final String speedString = String.format(getResources().getString(R.string.speed_template), mCurrentSpeed * 2);
         final String maxSpeedString = String.format(getResources().getString(R.string.speed_template), mMaxSpeed);
         mTextPaint.getTextBounds(speedString, 0, speedString.length(), mTextBounds);
-        float x = mSpeedRect.width() / 2f - mTextBounds.width() / 2f - mTextBounds.left;
-        float y = mSpeedRect.height() / 2f + mTextBounds.height() / 2f - mTextBounds.bottom;
-        canvas.drawText(speedString, x, y+50, mTextPaint);
+        float x = mProgressRect.width() / 2f - mTextBounds.width() / 2f - mTextBounds.left+ mProgressRect.left;
+        float y = mProgressRect.height() / 2f + mTextBounds.height() / 2f - mTextBounds.bottom+ mProgressRect.top;
+        canvas.drawText(speedString, x, y + 50, mTextPaint);
         canvas.drawText(maxSpeedString, x, y + 150, mTextPaint);
     }
 
@@ -172,9 +176,20 @@ public class SpeedometerView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        int width = ((int) mSpeedRect.width() + (int) mBackScalePaint.getStrokeWidth() * 2);
-        int height = ((int) mSpeedRect.height() + (int) mBackScalePaint.getStrokeWidth() * 2);
+        final String maxSpeedString = String.format(getResources().getString(R.string.speed_template), mMaxSpeed);
+        mTextPaint.getTextBounds(maxSpeedString, 0, maxSpeedString.length(), mTextBounds);
 
-        setMeasuredDimension(width, height);
+        int requestedSize = (int) (Math.max(mTextBounds.width(), mTextBounds.height()) + Math.PI * STROKE_WIDTH);
+        final int suggestedMinimumSize = Math.max(getSuggestedMinimumWidth(), getSuggestedMinimumHeight());
+        requestedSize = Math.max(requestedSize, suggestedMinimumSize);
+
+        final int desireWidth = requestedSize + getPaddingLeft() + getPaddingRight();
+        final int desireHeight = requestedSize + getPaddingTop() + getPaddingBottom();
+        final int resolveWidth = resolveSize(desireWidth, widthMeasureSpec);
+        final int resolveHeight = resolveSize(desireHeight, heightMeasureSpec);
+
+        final int resolvedSize = Math.min(resolveHeight, resolveWidth);
+
+        setMeasuredDimension(resolvedSize, resolvedSize);
     }
 }
