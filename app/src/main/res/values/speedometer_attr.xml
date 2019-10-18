@@ -6,7 +6,6 @@
         <attr name="color_low" format="color" />
         <attr name="color_middle" format="color" />
         <attr name="color_high" format="color" />
-        <attr name="color_indicator" format="color" />
         <attr name="textSize" format="dimension" />
 
     </declare-styleable>

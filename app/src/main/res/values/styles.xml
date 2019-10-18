@@ -14,7 +14,6 @@
         <item name="color_low">@color/colorBlue</item>
         <item name="color_middle">@color/colorGreen</item>
         <item name="color_high">@color/colorRed</item>
-        <item name="color_indicator">@color/colorAccent</item>
         <item name="textSize">@dimen/default_text_size</item>
     </style>
 
