@@ -19,6 +19,7 @@ public class SpeedometerView extends View {
 
     public static final float STROKE_WIDTH = 64;
     public static final int DEFAULT_MAX_SPEED = 360;
+    private static final float DOT_RADIUS=32f;
     private static final int DEFAULT_COLOR_INDICATOR = Color.GRAY;
     private static final int DEFAULT_COLOR_LOW = Color.BLUE;
     private static final int DEFAULT_COLOR_MIDDLE = Color.GREEN;
@@ -39,11 +40,12 @@ public class SpeedometerView extends View {
 
     private Paint mBackScalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mIndicatorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mArrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mDigitsPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mDotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private Paint mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Rect mTextBounds = new Rect();
-
-    private Paint mArrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     public SpeedometerView(Context context) {
         super(context);
@@ -99,8 +101,15 @@ public class SpeedometerView extends View {
         mArrowPaint.setStrokeWidth(10f);
         mArrowPaint.setStyle(Paint.Style.STROKE);
         mArrowPaint.setColor(currentColor());
-    }
 
+        mDotPaint.setStyle(Paint.Style.FILL);
+        mDotPaint.setColor(Color.BLACK);
+
+        mDigitsPaint.setStrokeWidth(2f);
+        mDigitsPaint.setTextSize(28f);
+        mDigitsPaint.setShadowLayer(5f, 0f, 0f, Color.RED);
+        mDigitsPaint.setColor(DEFAULT_COLOR_TEXT);
+    }
 
     private int currentColor() {
         if (mCurrentSpeed >= 0 && mCurrentSpeed <= 60) {
@@ -115,29 +124,28 @@ public class SpeedometerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.translate(STROKE_WIDTH/2, STROKE_WIDTH/2);
+        canvas.translate(STROKE_WIDTH / 2, STROKE_WIDTH / 2);
 
-        mProgressRect.left = getPaddingLeft();
-        mProgressRect.top = getPaddingTop();
-        mProgressRect.right = getWidth() - STROKE_WIDTH - getPaddingRight();
-        mProgressRect.bottom = getHeight() - STROKE_WIDTH - getPaddingBottom();
-
+        updateProgressRect();
         // scale
         drawScaleBackground(canvas);
         // indicator
         drawScaleIndicator(canvas);
-        // text
-        drawText(canvas);
         // arrow
         drawArrow(canvas);
+        // digits
+        drawDigits(canvas);
+        // dot
+        drawDot(canvas);
+        // text
+        drawText(canvas);
     }
 
-    private void drawArrow(Canvas canvas) {
-        double radius = mProgressRect.height() / 2;
-        double angle = (2 * Math.PI) / mMaxSpeed * mCurrentSpeed + 2 * Math.PI / 2;
-        float x = (float) (radius * Math.cos(angle));
-        float y = (float) (radius * Math.sin(angle));
-        canvas.drawLine(mProgressRect.centerX(), mProgressRect.centerY(), x + mProgressRect.centerX(), y + mProgressRect.centerY(), mArrowPaint);
+    private void updateProgressRect() {
+        mProgressRect.left = getPaddingLeft();
+        mProgressRect.top = getPaddingTop();
+        mProgressRect.right = getWidth() - STROKE_WIDTH - getPaddingRight();
+        mProgressRect.bottom = getHeight() - STROKE_WIDTH - getPaddingBottom();
     }
 
     private void drawScaleBackground(Canvas canvas) {
@@ -162,14 +170,45 @@ public class SpeedometerView extends View {
         invalidate();
     }
 
+    private void drawArrow(Canvas canvas) {
+        double radius = mProgressRect.height() / 2;
+        double angle = (2 * Math.PI) / mMaxSpeed * mCurrentSpeed + 2 * Math.PI / 2;
+        float x = (float) (radius * Math.cos(angle));
+        float y = (float) (radius * Math.sin(angle));
+        canvas.drawLine(mProgressRect.centerX(), mProgressRect.centerY(), x + mProgressRect.centerX(), y + mProgressRect.centerY(), mArrowPaint);
+    }
+
+    private void drawDot(Canvas canvas) {
+        canvas.drawCircle(mProgressRect.centerX(), mProgressRect.centerY(), DOT_RADIUS, mDotPaint);
+    }
+
+    private void drawDigits(Canvas canvas) {
+        canvas.save();
+        float radius = mProgressRect.height() / 2;
+        canvas.rotate(-180, mProgressRect.centerX(), mProgressRect.centerY());
+        Path circle = new Path();
+        double halfCircumference = radius * Math.PI;
+        double increments = 20;
+        for (int i = 0; i < this.mMaxSpeed; i += increments) {
+            circle.addCircle(mProgressRect.centerX(), mProgressRect.centerY(), radius, Path.Direction.CW);
+            canvas.drawTextOnPath(String.format("%d", i),
+                    circle,
+                    (float) (i * halfCircumference / this.mMaxSpeed - 20),
+                    -40f,
+                    mDigitsPaint);
+        }
+
+        canvas.restore();
+    }
+
     private void drawText(Canvas canvas) {
         final String speedString = String.format(getResources().getString(R.string.speed_template), mCurrentSpeed * 2);
         final String maxSpeedString = String.format(getResources().getString(R.string.speed_template), mMaxSpeed);
         mTextPaint.getTextBounds(speedString, 0, speedString.length(), mTextBounds);
-        float x = mProgressRect.width() / 2f - mTextBounds.width() / 2f - mTextBounds.left+ mProgressRect.left;
-        float y = mProgressRect.height() / 2f + mTextBounds.height() / 2f - mTextBounds.bottom+ mProgressRect.top;
-        canvas.drawText(speedString, x, y + 50, mTextPaint);
-        canvas.drawText(maxSpeedString, x, y + 150, mTextPaint);
+        float x = mProgressRect.width() / 2f - mTextBounds.width() / 2f - mTextBounds.left + mProgressRect.left;
+        float y = mProgressRect.height() / 2f + mTextBounds.height() / 2f - mTextBounds.bottom + mProgressRect.top;
+        canvas.drawText(speedString, x, y + 100, mTextPaint);
+        canvas.drawText(maxSpeedString, x, y + 200, mTextPaint);
     }
 
     @Override
