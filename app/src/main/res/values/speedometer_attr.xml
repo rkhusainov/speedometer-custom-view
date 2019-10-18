@@ -2,7 +2,7 @@
 <resources>
     <declare-styleable name="SpeedometerView">
         <attr name="max_speed" format="integer" />
-        <attr name="color" format="color" />
+        <attr name="color_back_circle" format="color" />
         <attr name="color_low" format="color" />
         <attr name="color_middle" format="color" />
         <attr name="color_high" format="color" />

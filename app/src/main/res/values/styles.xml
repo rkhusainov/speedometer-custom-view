@@ -10,7 +10,7 @@
     </style>
 
     <style name="SpeedometerDefaultProgressStyle">
-        <item name="color">@color/colorAccent</item>
+        <item name="color_back_circle">@color/colorGray</item>
         <item name="color_low">@color/colorBlue</item>
         <item name="color_middle">@color/colorGreen</item>
         <item name="color_high">@color/colorRed</item>

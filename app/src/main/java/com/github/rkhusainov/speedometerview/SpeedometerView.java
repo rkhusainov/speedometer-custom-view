@@ -20,6 +20,7 @@ public class SpeedometerView extends View {
     public static final float STROKE_WIDTH = 64;
     public static final int DEFAULT_MAX_SPEED = 360;
     private static final float DOT_RADIUS=32f;
+    private static final int DEFAULT_COLOR_BACK_CIRCLE = Color.GRAY;
     private static final int DEFAULT_COLOR_INDICATOR = Color.GRAY;
     private static final int DEFAULT_COLOR_LOW = Color.BLUE;
     private static final int DEFAULT_COLOR_MIDDLE = Color.GREEN;
@@ -28,6 +29,7 @@ public class SpeedometerView extends View {
 
     private int mCurrentSpeed;
     private int mMaxSpeed;
+    private int mBackCircleColor;
     private int mLowSpeedColor;
     private int mMiddleSpeedColor;
     private int mHighSpeedColor;
@@ -63,18 +65,19 @@ public class SpeedometerView extends View {
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
         final Resources.Theme theme = context.getTheme();
-        final TypedArray typedArray = theme.obtainStyledAttributes(attrs,
-                R.styleable.SpeedometerView, 0, 0);
-
-        // Default values
 //        final TypedArray typedArray = theme.obtainStyledAttributes(attrs,
-//                R.styleable.SpeedometerView, R.attr.speedometerProgressStyle, R.style.SpeedometerDefaultProgressStyle);
+//                R.styleable.SpeedometerView, 0, 0);
+
+//         Default values
+        final TypedArray typedArray = theme.obtainStyledAttributes(attrs,
+                R.styleable.SpeedometerView, R.attr.speedometerProgressStyle, R.style.SpeedometerDefaultProgressStyle);
 
         try {
             mMaxSpeed = typedArray.getInteger(R.styleable.SpeedometerView_max_speed, DEFAULT_MAX_SPEED);
-            mLowSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color, DEFAULT_COLOR_LOW);
-            mMiddleSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color, DEFAULT_COLOR_MIDDLE);
-            mHighSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color, DEFAULT_COLOR_HIGH);
+            mBackCircleColor = typedArray.getColor(R.styleable.SpeedometerView_color_back_circle, DEFAULT_COLOR_BACK_CIRCLE);
+            mLowSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color_low, DEFAULT_COLOR_LOW);
+            mMiddleSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color_middle, DEFAULT_COLOR_MIDDLE);
+            mHighSpeedColor = typedArray.getColor(R.styleable.SpeedometerView_color_high, DEFAULT_COLOR_HIGH);
             mIndicatorColor = typedArray.getColor(R.styleable.SpeedometerView_color_indicator, DEFAULT_COLOR_INDICATOR);
 
             mTextSize = typedArray.getDimensionPixelSize(R.styleable.SpeedometerView_textSize,
@@ -89,7 +92,7 @@ public class SpeedometerView extends View {
     private void initDrawingTools() {
         mBackScalePaint.setStrokeWidth(STROKE_WIDTH);
         mBackScalePaint.setStyle(Paint.Style.STROKE);
-        mBackScalePaint.setColor(mIndicatorColor);
+        mBackScalePaint.setColor(mBackCircleColor);
 
         mIndicatorPaint.setStrokeWidth(STROKE_WIDTH);
         mIndicatorPaint.setStyle(Paint.Style.STROKE);
